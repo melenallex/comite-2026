@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Comité Echange 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(145deg, #0E5A36 0%, #168049 55%, #0B4629 100%);
+      color: #1A2E22;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card-cream {
+      background-color: #F4F3EE;
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+    }
+    .btn-primary {
+      background-color: #168049;
+      color: #FFFFFF;
+      transition: all 0.15s ease;
+    }
+    .btn-primary:hover {
+      background-color: #11663A;
+      transform: translateY(-1px);
+    }
+    .ans-0 { background-color: #D93829; }
+    .ans-0:hover { background-color: #B82B1E; }
+    .ans-1 { background-color: #1D63B8; }
+    .ans-1:hover { background-color: #164E94; }
+    .ans-2 { background-color: #D69A00; }
+    .ans-2:hover { background-color: #B38000; }
+    .ans-3 { background-color: #168049; }
+    .ans-3:hover { background-color: #11663A; }
+    @keyframes pulseFast {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+    .timer-urgent {
+      animation: pulseFast 0.6s infinite;
+      background-color: #D93829 !important;
+      color: #FFFFFF !important;
+    }
+  </style>
+</head>
+<body class="flex flex-col justify-between p-4 md:p-8">
+
+  <main id="app" class="w-full max-w-5xl mx-auto my-auto"></main>
+
+  <div class="fixed bottom-4 right-4 z-50">
+    <label class="flex items-center gap-2 bg-[#F4F3EE] text-[#0E5A36] px-4 py-2 rounded-full shadow-lg cursor-pointer text-xs font-bold select-none border border-[#0E5A36]/20">
+      <input type="checkbox" id="music-toggle" class="accent-[#168049] w-4 h-4 cursor-pointer" onchange="toggleMusic(this.checked)">
+      <span id="music-label">Musique : Coupée</span>
+    </label>
+  </div>
+
+  <script>
+    const DEFAULT_QUESTIONS = [
+      {
+        question: "Quelle opération commerciale a généré un record de +20M€ de CA en Proximité en 2025 ?",
+        timer: 20,
+        options: [
+          "Chocolat de Noël 2025",
+          "PROS CONTACT et Op Marques City/Express « Tous supporters »",
+          "OP MONOPOLY 2025",
+          "FAV 2026"
+        ],
+        correct: 2
+      },
+      {
+        question: "Quel est le quota valeur des Marques De Distributeurs (MDD) en France en 2026 ?",
+        timer: 20,
+        options: ["32,1 %", "34,7 %", "38,5 %", "29,4 %"],
+        correct: 1
+      },
+      {
+        question: "Dans quel ordre se classent les 4 principales attentes des consommateurs envers les produits MDC ?",
+        timer: 25,
+        options: [
+          "1. La marque / 2. La qualité / 3. Le prix / 4. Le goût",
+          "1. Le goût / 2. Le prix / 3. La qualité / 4. La marque",
+          "1. Le goût / 2. Le qualité / 3. La marque / 4. Le prix",
+          "1. Le prix / 2. La marque / 3. Le goût / 4. La qualité"
+        ],
+        correct: 1
+      },
+      {
+        question: "Combien dépense en moyenne par visite un GROS client MDC chez Carrefour (contre 23 € pour un petit client) ?",
+        timer: 20,
+        options: ["29 € par visite", "32 € par visite", "36 € par visite", "42 € par visite"],
+        correct: 2
+      },
+      {
+        question: "Quelle part du chiffre d'affaires total des innovations du groupe Carrefour est réalisée par la Proximité ?",
+        timer: 20,
+        options: ["1/5 du CA", "1/4 du CA", "1/3 du CA", "La moitié du CA"],
+        correct: 2
+      },
+      {
+        question: "Sous quel nouveau nom la gamme beauté MDC « Science » est-elle relookée ?",
+        timer: 20,
+        options: ["Nectar of Bio", "Nectar of Glow", "Pure Science", "Carrefour Expert Glow"],
+        correct: 1
+      },
+      {
+        question: "Avec la bascule en Collection Mensuelle via GAME dès septembre, combien de références sont proposées en engagement en plus des 20 en Flux Poussé ?",
+        timer: 20,
+        options: ["Jusqu'à 10 références", "Jusqu'à 20 références", "Jusqu'à 30 références", "Jusqu'à 50 références"],
+        correct: 2
+      },
+      {
+        question: "Quelle quantité d'UVC a été engagée sur Red Bull Winter en 2025 (contre 313 680 UVC sécurisées en 2026) ?",
+        timer: 20,
+        options: ["416 219 UVC", "29 524 UVC", "120 613 UVC", "65 680 UVC"],
+        correct: 0
+      },
+      {
+        question: "Quelle progression de CA la nutrition sportive a-t-elle enregistrée au S1 2026 vs S1 2025 ?",
+        timer: 20,
+        options: ["+35 %", "+50 %", "+75 %", "+95 %"],
+        correct: 2
+      },
+      {
+        question: "Comment se répartissent les 150 références de la refonte du TOP Bio ?",
+        timer: 20,
+        options: [
+          "150 références Carrefour Bio uniquement",
+          "120 références Carrefour Bio et 30 références Marques Nationales",
+          "100 références Carrefour Bio et 50 références Marques Nationales",
+          "80 références Carrefour Bio et 70 références Marques Nationales"
+        ],
+        correct: 1
+      }
+    ];
+
+    let savedQuestions = null;
+    try {
+      const rawQ = localStorage.getItem('quiz_ce_2026_questions');
+      if (rawQ) savedQuestions = JSON.parse(rawQ);
+    } catch (e) {}
+
+    let state = {
+      view: 'home',
+      questions: savedQuestions || JSON.parse(JSON.stringify(DEFAULT_QUESTIONS)),
+      pin: '',
+      pinLocked: false,
+      status: 'lobby',
+      paused: false,
+      remainingTime: 20,
+      currentQuestion: 0,
+      totalQuestions: 10,
+      activeQuestionObj: null,
+      questionStartTime: 0,
+      players: {},
+      answers: {},
+      playerId: 'p_' + Math.random().toString(36).substring(2, 9),
+      pseudo: '',
+      selectedAnswer: null,
+      myScore: 0,
+      myLastPoints: 0,
+      myRank: 0,
+      timerInterval: null,
+      peer: null,
+      connections: {},
+      hostConn: null
+    };
+
+    // --- Moteur Audio ---
+    const SoundEngine = {
+      ctx: null,
+      isPlaying: false,
+      timerId: null,
+      step: 0,
+      mode: 'lobby',
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+      },
+      playTone(freq, duration, type = 'triangle', gainVal = 0.08) {
+        if (!this.isPlaying || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      },
+      start() {
+        this.init();
+        if (this.isPlaying) return;
+        this.isPlaying = true;
+        this.loop();
+      },
+      stop() {
+        this.isPlaying = false;
+        if (this.timerId) clearTimeout(this.timerId);
+      },
+      loop() {
+        if (!this.isPlaying) return;
+        if (state.paused) {
+          this.timerId = setTimeout(() => this.loop(), 400);
+          return;
+        }
+        const lobbyNotes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63];
+        const questionNotes = [293.66, 349.23, 440.00, 587.33, 440.00, 349.23, 329.63, 392.00];
+        const notes = this.mode === 'question' ? questionNotes : lobbyNotes;
+        const tempo = this.mode === 'urgent' ? 210 : (this.mode === 'question' ? 300 : 480);
+
+        const freq = notes[this.step % notes.length];
+        this.playTone(freq, 0.22, 'triangle', 0.06);
+        if (this.step % 2 === 0) this.playTone(freq / 2, 0.25, 'sine', 0.08);
+        this.step++;
+        this.timerId = setTimeout(() => this.loop(), tempo);
+      },
+      jingleReveal() {
+        if (!this.isPlaying) return;
+        [523.25, 659.25, 783.99].forEach((f, idx) => {
+          setTimeout(() => this.playTone(f, 0.35, 'triangle', 0.09), idx * 90);
+        });
+      }
+    };
+
+    function toggleMusic(enabled) {
+      const label = document.getElementById('music-label');
+      if (enabled) {
+        SoundEngine.start();
+        label.textContent = 'Musique : Activée';
+      } else {
+        SoundEngine.stop();
+        label.textContent = 'Musique : Coupée';
+      }
+    }
+
+    function cleanupNetwork() {
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      state.timerInterval = null;
+      if (state.peer) {
+        try { state.peer.destroy(); } catch (e) {}
+        state.peer = null;
+      }
+      state.connections = {};
+      state.hostConn = null;
+    }
+
+    function goHome() {
+      cleanupNetwork();
+      SoundEngine.mode = 'lobby';
+      state.view = 'home';
+      state.pinLocked = false;
+      state.paused = false;
+      render();
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      if (state.view === 'home') renderHome(app);
+      else if (state.view === 'editor') renderEditor(app);
+      else if (state.view === 'host') renderHost(app);
+      else if (state.view === 'join') renderJoin(app);
+      else if (state.view === 'player') renderPlayer(app);
+    }
+
+    // --- ACCUEIL ---
+    function renderHome(app) {
+      app.innerHTML = `
+        <div class="card-cream p-8 md:p-14 text-center max-w-3xl mx-auto">
+          <div class="inline-block px-4 py-1.5 rounded-full bg-[#0E5A36]/10 text-[#0E5A36] font-bold text-xs uppercase tracking-wider mb-4">
+            Atelier Marchandise — Novembre 2026
+          </div>
+          <h1 class="text-3xl md:text-5xl font-black text-[#0E5A36] tracking-tight mb-4">
+            Quiz Comité Echange 2026
+          </h1>
+          <p class="text-base md:text-lg text-[#1A2E22]/75 font-medium max-w-xl mx-auto mb-10">
+            Animez le quiz en direct sur grand écran et faites participer vos équipes depuis leurs téléphones avec classement instantané.
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+            <button onclick="startHostSession()" class="btn-primary p-6 rounded-2xl shadow-md flex flex-col justify-between cursor-pointer">
+              <span class="text-xs uppercase tracking-wider opacity-80 font-bold mb-2">Animateur</span>
+              <span class="text-xl font-extrabold mb-1">Lancer une session</span>
+              <span class="text-xs opacity-90">Afficher le QR code et projeter les questions</span>
+            </button>
+
+            <button onclick="openJoinView()" class="bg-[#0E5A36] hover:bg-[#093E25] text-white p-6 rounded-2xl shadow-md flex flex-col justify-between transition cursor-pointer">
+              <span class="text-xs uppercase tracking-wider opacity-80 font-bold mb-2">Participant</span>
+              <span class="text-xl font-extrabold mb-1">Rejoindre la partie</span>
+              <span class="text-xs opacity-90">Entrer le code PIN sur téléphone</span>
+            </button>
+
+            <button onclick="openEditor()" class="bg-white hover:bg-stone-100 text-[#0E5A36] border-2 border-[#0E5A36]/20 p-6 rounded-2xl shadow-sm flex flex-col justify-between transition cursor-pointer">
+              <span class="text-xs uppercase tracking-wider text-[#168049] font-bold mb-2">Préparation</span>
+              <span class="text-xl font-extrabold mb-1">Modifier le quiz</span>
+              <span class="text-xs text-[#1A2E22]/70">${state.questions.length} questions prêtes</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- ÉDITEUR DE QUESTIONS ---
+    function openEditor() {
+      state.view = 'editor';
+      render();
+    }
+
+    function saveQuestions() {
+      try {
+        localStorage.setItem('quiz_ce_2026_questions', JSON.stringify(state.questions));
+      } catch (e) {}
+    }
+
+    function renderEditor(app) {
+      let questionsHtml = state.questions.map((q, idx) => `
+        <div class="bg-white p-6 rounded-xl border border-[#0E5A36]/15 shadow-sm mb-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <span class="font-extrabold text-[#0E5A36] text-sm uppercase tracking-wider">Question ${idx + 1}</span>
+            <div class="flex items-center gap-3">
+              <label class="text-xs font-bold text-stone-600 flex items-center gap-1">
+                Durée (sec) :
+                <input type="number" min="5" max="120" value="${q.timer || 20}" onchange="updateQuestionField(${idx}, 'timer', parseInt(this.value))" class="w-16 border border-stone-300 rounded px-2 py-1 text-center font-bold text-[#0E5A36]">
+              </label>
+              <button onclick="deleteQuestion(${idx})" class="text-xs font-bold text-red-600 hover:underline px-2 py-1">Supprimer</button>
+            </div>
+          </div>
+          <input type="text" value="${escapeHtml(q.question)}" onchange="updateQuestionField(${idx}, 'question', this.value)" class="w-full border border-stone-300 rounded-lg px-3 py-2.5 font-bold text-[#1A2E22] mb-4 focus:outline-none focus:border-[#168049]" placeholder="Intitulé de la question">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            ${q.options.map((opt, oIdx) => `
+              <div class="flex items-center gap-2 bg-[#F4F3EE] p-2.5 rounded-lg border ${q.correct === oIdx ? 'border-[#168049] ring-2 ring-[#168049]/30' : 'border-transparent'}">
+                <input type="radio" name="correct_${idx}" ${q.correct === oIdx ? 'checked' : ''} onchange="updateQuestionField(${idx}, 'correct', ${oIdx})" class="accent-[#168049] w-4 h-4 cursor-pointer" title="Cocher la bonne réponse">
+                <input type="text" value="${escapeHtml(opt)}" onchange="updateOptionField(${idx}, ${oIdx}, this.value)" class="w-full bg-transparent text-sm font-semibold focus:outline-none" placeholder="Proposition ${oIdx + 1}">
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      app.innerHTML = `
+        <div class="card-cream p-6 md:p-10">
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-[#0E5A36]/15">
+            <div>
+              <button onclick="goHome()" class="text-xs font-bold text-[#168049] hover:underline mb-1 block">← Retour à l'accueil</button>
+              <h2 class="text-2xl font-black text-[#0E5A36]">Éditeur de questions</h2>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="resetDefaultQuestions()" class="px-4 py-2 rounded-lg text-xs font-bold bg-stone-200 hover:bg-stone-300 text-stone-800">Réinitialiser</button>
+              <button onclick="addQuestion()" class="px-4 py-2 rounded-lg text-xs font-bold bg-[#0E5A36] hover:bg-[#093E25] text-white">+ Ajouter une question</button>
+              <button onclick="saveAndStartHost()" class="px-5 py-2 rounded-lg text-xs font-bold btn-primary shadow">Enregistrer et lancer</button>
+            </div>
+          </div>
+          <div class="max-h-[65vh] overflow-y-auto pr-1">
+            ${questionsHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    function updateQuestionField(idx, field, val) {
+      state.questions[idx][field] = val;
+      saveQuestions();
+    }
+
+    function updateOptionField(qIdx, oIdx, val) {
+      state.questions[qIdx].options[oIdx] = val;
+      saveQuestions();
+    }
+
+    function addQuestion() {
+      state.questions.push({
+        question: "Nouvelle question",
+        timer: 20,
+        options: ["Réponse A", "Réponse B", "Réponse C", "Réponse D"],
+        correct: 0
+      });
+      saveQuestions();
+      render();
+    }
+
+    function deleteQuestion(idx) {
+      if (state.questions.length <= 1) return alert("Le quiz doit contenir au moins une question.");
+      state.questions.splice(idx, 1);
+      saveQuestions();
+      render();
+    }
+
+    function resetDefaultQuestions() {
+      state.questions = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
+      saveQuestions();
+      render();
+    }
+
+    function saveAndStartHost() {
+      saveQuestions();
+      startHostSession();
+    }
+
+    // --- LOGIQUE ANIMATEUR ---
+    function buildHostPayload() {
+      const qObj = state.questions[state.currentQuestion];
+      const payload = {
+        type: 'state',
+        st: state.status,
+        pz: state.paused ? 1 : 0,
+        q: state.currentQuestion,
+        tot: state.questions.length
+      };
+      if (qObj && (state.status === 'question' || state.status === 'reveal')) {
+        payload.qd = {
+          t: qObj.question,
+          o: qObj.options,
+          c: qObj.correct,
+          tm: qObj.timer || 20
+        };
+      }
+      if (state.status === 'leaderboard' || state.status === 'podium') {
+        const sorted = Object.values(state.players).sort((a, b) => b.score - a.score);
+        payload.rk = sorted.map(p => [p.id, p.score, p.lastPoints]);
+      }
+      return payload;
+    }
+
+    function broadcastHostCommand() {
+      const payload = buildHostPayload();
+      Object.values(state.connections).forEach(conn => {
+        if (conn && conn.open) {
+          try { conn.send(payload); } catch (e) {}
+        }
+      });
+    }
+
+    function startHostSession() {
+      cleanupNetwork();
+      const pin = Math.floor(1000 + Math.random() * 9000).toString();
+      state.pin = pin;
+      state.view = 'host';
+      state.status = 'lobby';
+      state.paused = false;
+      state.currentQuestion = 0;
+      state.players = {};
+      state.answers = {};
+      SoundEngine.mode = 'lobby';
+      render();
+
+      const peer = new Peer(`quiz-ce2026-${pin}`, { secure: true });
+      state.peer = peer;
+
+      peer.on('open', () => {
+        const statusEl = document.getElementById('net-status');
+        if (statusEl) {
+          statusEl.textContent = 'Salle prête';
+          statusEl.className = 'text-xs font-extrabold uppercase tracking-wider text-[#168049]';
+        }
+      });
+
+      peer.on('error', (err) => {
+        const statusEl = document.getElementById('net-status');
+        if (statusEl) {
+          statusEl.textContent = 'Erreur : ' + err.type;
+          statusEl.className = 'text-xs font-extrabold uppercase tracking-wider text-red-600';
+        }
+      });
+
+      peer.on('connection', (conn) => {
+        conn.on('open', () => {
+          state.connections[conn.peer] = conn;
+          conn.send(buildHostPayload());
+        });
+
+        conn.on('data', (msg) => {
+          if (!msg || typeof msg !== 'object') return;
+          if (msg.type === 'join') {
+            state.connections[msg.id] = conn;
+            state.players[msg.id] = {
+              id: msg.id,
+              pseudo: msg.pseudo || 'Joueur',
+              score: state.players[msg.id] ? state.players[msg.id].score : 0,
+              lastPoints: 0
+            };
+            if (state.status === 'lobby') {
+              updateLobbyPlayersDOM();
+            }
+            conn.send(buildHostPayload());
+          } else if (msg.type === 'ans') {
+            if (state.status !== 'question' || state.paused || state.currentQuestion !== msg.q) return;
+            const qKey = 'q_' + msg.q;
+            if (!state.answers[qKey]) state.answers[qKey] = {};
+            if (state.answers[qKey][msg.id]) return;
+
+            const qObj = state.questions[msg.q];
+            const elapsed = Math.max(0, (Date.now() - state.questionStartTime) / 1000);
+            const maxTime = qObj.timer || 20;
+            const isCorrect = (msg.a === qObj.correct);
+            const points = isCorrect ? Math.round(500 + 500 * Math.max(0, Math.min(1, 1 - (elapsed / maxTime)))) : 0;
+
+            state.answers[qKey][msg.id] = { answerIndex: msg.a, isCorrect, points };
+            if (!state.players[msg.id]) {
+              state.players[msg.id] = { id: msg.id, pseudo: msg.pseudo || 'Joueur', score: 0, lastPoints: 0 };
+            }
+            state.players[msg.id].score += points;
+            state.players[msg.id].lastPoints = points;
+
+            const totalPlayers = Object.keys(state.players).length;
+            const totalAnswers = Object.keys(state.answers[qKey]).length;
+            const ansEl = document.getElementById('host-answer-count');
+            if (ansEl) ansEl.textContent = `${totalAnswers} / ${totalPlayers} rép.`;
+
+            if (totalPlayers > 0 && totalAnswers >= totalPlayers) {
+              hostRevealAnswer();
+            }
+          }
+        });
+      });
+    }
+
+    function updateLobbyPlayersDOM() {
+      const container = document.getElementById('lobby-players');
+      const countEl = document.getElementById('lobby-count');
+      if (!container) return;
+      const players = Object.values(state.players);
+      if (countEl) countEl.textContent = `${players.length} participant${players.length > 1 ? 's' : ''}`;
+      container.innerHTML = players.length === 0
+        ? `<p class="text-stone-400 italic text-sm">En attente des participants...</p>`
+        : players.map(p => `<span class="bg-[#0E5A36] text-white font-bold px-4 py-2 rounded-full text-sm shadow-sm">${escapeHtml(p.pseudo)}</span>`).join('');
+    }
+
+    function togglePause() {
+      state.paused = !state.paused;
+      broadcastHostCommand();
+      render();
+    }
+
+    function hostBackToLobby() {
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      SoundEngine.mode = 'lobby';
+      state.status = 'lobby';
+      state.paused = false;
+      broadcastHostCommand();
+      render();
+    }
+
+    function hostNextQuestion(qIdx) {
+      if (qIdx < 0) {
+        hostBackToLobby();
+        return;
+      }
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      SoundEngine.mode = 'question';
+      state.status = 'question';
+      state.paused = false;
+      state.currentQuestion = qIdx;
+      state.remainingTime = state.questions[qIdx].timer || 20;
+      state.questionStartTime = Date.now();
+      broadcastHostCommand();
+      render();
+    }
+
+    function hostRevealAnswer() {
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      SoundEngine.mode = 'lobby';
+      SoundEngine.jingleReveal();
+      state.status = 'reveal';
+      state.paused = false;
+      broadcastHostCommand();
+      render();
+    }
+
+    function hostShowLeaderboard() {
+      const isLast = state.currentQuestion >= state.questions.length - 1;
+      state.status = isLast ? 'podium' : 'leaderboard';
+      state.paused = false;
+      if (isLast) SoundEngine.jingleReveal();
+      broadcastHostCommand();
+      render();
+    }
+
+    function renderHost(app) {
+      if (state.status === 'lobby') {
+        const players = Object.values(state.players);
+        const baseUrl = window.location.origin + window.location.pathname;
+        const joinUrl = `${baseUrl}?pin=${state.pin}`;
+
+        app.innerHTML = `
+          <div class="card-cream p-8 md:p-10">
+            <div class="flex justify-between items-center mb-6">
+              <button onclick="goHome()" class="text-xs font-bold text-[#168049] hover:underline cursor-pointer">← Retour à l'accueil</button>
+              <span id="net-status" class="text-xs font-extrabold uppercase tracking-wider text-amber-600">Ouverture de la salle...</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-white p-6 md:p-8 rounded-2xl border border-[#0E5A36]/15 shadow-sm mb-8">
+              <div class="md:col-span-4 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-stone-200 pb-6 md:pb-0 md:pr-6">
+                <div id="qrcode-box" class="p-3 bg-white rounded-xl border-2 border-[#0E5A36]/20 shadow-sm mb-3"></div>
+                <span class="text-xs font-bold text-[#0E5A36] text-center">Scannez pour entrer directement</span>
+              </div>
+              <div class="md:col-span-8 text-center md:text-left">
+                <p class="text-xs font-bold uppercase tracking-wider text-[#168049] mb-1">Code PIN de la session</p>
+                <div class="text-5xl md:text-7xl font-black text-[#0E5A36] tracking-widest my-2 select-all">${state.pin}</div>
+                <p class="text-xs text-stone-500 break-all mb-6">${escapeHtml(joinUrl)}</p>
+                <button onclick="hostNextQuestion(0)" class="btn-primary px-8 py-4 rounded-xl font-extrabold text-lg shadow-lg cursor-pointer">
+                  Démarrer le quiz (${state.questions.length} questions)
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-extrabold text-[#0E5A36] text-lg">Participants connectés</h3>
+                <span id="lobby-count" class="text-sm font-bold text-[#168049]">${players.length} participant${players.length > 1 ? 's' : ''}</span>
+              </div>
+              <div id="lobby-players" class="flex flex-wrap gap-2.5 min-h-[48px] bg-white/70 p-4 rounded-xl border border-[#0E5A36]/10">
+                ${players.length === 0
+                  ? `<p class="text-stone-400 italic text-sm">En attente des participants...</p>`
+                  : players.map(p => `<span class="bg-[#0E5A36] text-white font-bold px-4 py-2 rounded-full text-sm shadow-sm">${escapeHtml(p.pseudo)}</span>`).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+        setTimeout(() => {
+          const qrBox = document.getElementById('qrcode-box');
+          if (qrBox) {
+            qrBox.innerHTML = '';
+            new QRCode(qrBox, {
+              text: joinUrl,
+              width: 190,
+              height: 190,
+              colorDark: "#0E5A36",
+              colorLight: "#FFFFFF",
+              correctLevel: QRCode.CorrectLevel.M
+            });
+          }
+        }, 30);
+        return;
+      }
+
+      const q = state.questions[state.currentQuestion];
+      const qKey = 'q_' + state.currentQuestion;
+      const answersObj = state.answers[qKey] || {};
+      const totalPlayers = Object.keys(state.players).length;
+      const totalAnswers = Object.keys(answersObj).length;
+
+      if (state.status === 'question') {
+        app.innerHTML = `
+          <div class="card-cream p-6 md:p-10 relative">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div class="flex items-center gap-2">
+                <button onclick="hostNextQuestion(${state.currentQuestion - 1})" class="px-3.5 py-1.5 rounded-full bg-white hover:bg-stone-100 text-[#0E5A36] border border-[#0E5A36]/20 font-bold text-xs cursor-pointer">
+                  ← ${state.currentQuestion === 0 ? 'Salle d\'attente' : 'Précédente'}
+                </button>
+                <span class="px-4 py-1.5 rounded-full bg-[#0E5A36] text-white font-bold text-xs uppercase tracking-wider">
+                  Question ${state.currentQuestion + 1} / ${state.questions.length}
+                </span>
+              </div>
+              <div class="flex items-center gap-3">
+                <button onclick="togglePause()" class="px-4 py-2 rounded-xl ${state.paused ? 'bg-amber-500 text-white' : 'bg-white text-[#0E5A36] border border-[#0E5A36]/20'} font-extrabold text-xs uppercase tracking-wider cursor-pointer shadow-sm">
+                  ${state.paused ? '▶ Reprendre' : '❚❚ Pause'}
+                </button>
+                <span id="host-answer-count" class="font-bold text-sm text-[#0E5A36]">${totalAnswers} / ${totalPlayers} rép.</span>
+                <div id="host-timer" class="w-14 h-14 rounded-full ${state.paused ? 'bg-amber-500' : 'bg-[#0E5A36]'} text-white flex items-center justify-center font-black text-2xl shadow">
+                  ${state.remainingTime}
+                </div>
+              </div>
+            </div>
+
+            ${state.paused ? `
+              <div class="bg-amber-50 border-2 border-amber-400 text-amber-900 p-4 rounded-xl text-center font-extrabold text-sm mb-6">
+                Quiz en pause — Le chronomètre et les réponses des participants sont suspendus.
+              </div>
+            ` : ''}
+
+            <div class="bg-white p-8 rounded-2xl border border-[#0E5A36]/15 shadow-sm mb-6 text-center">
+              <h2 class="text-2xl md:text-3xl font-black text-[#1A2E22] leading-snug">${escapeHtml(q.question)}</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              ${q.options.map((opt, idx) => `
+                <div class="ans-${idx} text-white p-6 rounded-xl font-bold text-lg shadow flex items-center gap-4">
+                  <span class="w-9 h-9 rounded-lg bg-black/20 flex items-center justify-center font-black shrink-0">${['A','B','C','D'][idx]}</span>
+                  <span>${escapeHtml(opt)}</span>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="flex items-center justify-between">
+              <button onclick="goHome()" class="text-xs font-bold text-stone-500 hover:underline cursor-pointer">Quitter la session</button>
+              <button onclick="hostRevealAnswer()" class="px-5 py-2.5 rounded-xl bg-stone-800 hover:bg-black text-white font-bold text-xs uppercase tracking-wider cursor-pointer">
+                Passer à la réponse
+              </button>
+            </div>
+          </div>
+        `;
+
+        if (state.timerInterval) clearInterval(state.timerInterval);
+        if (!state.paused) {
+          state.timerInterval = setInterval(() => {
+            if (state.paused) return;
+            state.remainingTime--;
+            const el = document.getElementById('host-timer');
+            if (el) {
+              el.textContent = Math.max(0, state.remainingTime);
+              if (state.remainingTime <= 5) {
+                el.classList.add('timer-urgent');
+                SoundEngine.mode = 'urgent';
+              }
+            }
+            if (state.remainingTime <= 0) {
+              clearInterval(state.timerInterval);
+              hostRevealAnswer();
+            }
+          }, 1000);
+        }
+        return;
+      }
+
+      if (state.status === 'reveal') {
+        const counts = [0, 0, 0, 0];
+        Object.values(answersObj).forEach(a => {
+          if (typeof a.answerIndex === 'number' && counts[a.answerIndex] !== undefined) {
+            counts[a.answerIndex]++;
+          }
+        });
+
+        app.innerHTML = `
+          <div class="card-cream p-6 md:p-10">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div class="flex items-center gap-2">
+                <button onclick="hostNextQuestion(${state.currentQuestion})" class="px-3.5 py-1.5 rounded-full bg-white hover:bg-stone-100 text-[#0E5A36] border border-[#0E5A36]/20 font-bold text-xs cursor-pointer">
+                  ← Revoir la question
+                </button>
+                <span class="px-4 py-1.5 rounded-full bg-[#0E5A36] text-white font-bold text-xs uppercase tracking-wider">
+                  Résultat — Question ${state.currentQuestion + 1} / ${state.questions.length}
+                </span>
+              </div>
+              <button onclick="hostShowLeaderboard()" class="btn-primary px-6 py-3 rounded-xl font-extrabold text-sm shadow cursor-pointer">
+                ${state.currentQuestion >= state.questions.length - 1 ? 'Voir le podium final' : 'Classement intermédiaire'}
+              </button>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-[#0E5A36]/15 mb-6 text-center">
+              <h2 class="text-xl md:text-2xl font-black text-[#1A2E22]">${escapeHtml(q.question)}</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              ${q.options.map((opt, idx) => {
+                const isCorrect = idx === q.correct;
+                return `
+                  <div class="ans-${idx} text-white p-6 rounded-xl font-bold text-lg shadow flex items-center justify-between transition ${isCorrect ? 'ring-4 ring-[#0E5A36] scale-[1.01]' : 'opacity-40'}">
+                    <div class="flex items-center gap-3">
+                      <span class="w-9 h-9 rounded-lg bg-black/20 flex items-center justify-center font-black shrink-0">${['A','B','C','D'][idx]}</span>
+                      <span>${escapeHtml(opt)}</span>
+                    </div>
+                    <div class="text-right shrink-0 ml-3">
+                      <span class="text-2xl font-black block">${counts[idx]}</span>
+                      <span class="text-[11px] uppercase tracking-wider font-extrabold">${isCorrect ? 'Bonne réponse' : 'Votes'}</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.status === 'leaderboard' || state.status === 'podium') {
+        const sorted = Object.values(state.players).sort((a, b) => b.score - a.score);
+        const isPodium = state.status === 'podium';
+
+        app.innerHTML = `
+          <div class="card-cream p-6 md:p-10 max-w-3xl mx-auto">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+              <div>
+                <button onclick="hostRevealAnswer()" class="text-xs font-bold text-[#168049] hover:underline mb-1 block cursor-pointer">← Retour à la réponse</button>
+                <h2 class="text-3xl font-black text-[#0E5A36]">${isPodium ? 'Podium Final' : 'Classement en direct'}</h2>
+              </div>
+              <div class="flex gap-2">
+                ${isPodium ? `
+                  <button onclick="exportCSV()" class="px-4 py-3 rounded-xl bg-white border border-[#0E5A36]/20 text-[#0E5A36] font-bold text-xs cursor-pointer">Exporter CSV</button>
+                  <button onclick="goHome()" class="btn-primary px-6 py-3 rounded-xl font-extrabold text-sm cursor-pointer">Terminer</button>
+                ` : `
+                  <button onclick="hostNextQuestion(${state.currentQuestion + 1})" class="btn-primary px-6 py-3 rounded-xl font-extrabold text-sm shadow cursor-pointer">
+                    Question suivante (${state.currentQuestion + 2} / ${state.questions.length})
+                  </button>
+                `}
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              ${sorted.length === 0 ? `<p class="text-center text-stone-500 py-8">Aucun participant enregistré.</p>` : sorted.slice(0, 10).map((p, idx) => `
+                <div class="flex items-center justify-between p-4 rounded-xl ${idx === 0 ? 'bg-[#0E5A36] text-white shadow-md' : 'bg-white text-[#1A2E22] border border-[#0E5A36]/10'}">
+                  <div class="flex items-center gap-4">
+                    <span class="w-9 h-9 rounded-full ${idx === 0 ? 'bg-white text-[#0E5A36]' : 'bg-[#F4F3EE] text-[#0E5A36]'} flex items-center justify-center font-black text-base">
+                      ${idx + 1}
+                    </span>
+                    <span class="font-extrabold text-lg">${escapeHtml(p.pseudo)}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="font-black text-xl">${p.score} pts</span>
+                    ${!isPodium && p.lastPoints > 0 ? `<span class="block text-xs ${idx === 0 ? 'text-emerald-200' : 'text-[#168049]'} font-bold">+${p.lastPoints}</span>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function exportCSV() {
+      const sorted = Object.values(state.players).sort((a, b) => b.score - a.score);
+      let csv = "Rang;Participant;Score\n";
+      sorted.forEach((p, i) => {
+        csv += `${i + 1};"${p.pseudo.replace(/"/g, '""')}";${p.score}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Resultats_Quiz_Comite_Echange_2026.csv`;
+      link.click();
+    }
+
+    // --- LOGIQUE PARTICIPANT ---
+    function openJoinView(prefillPin = '', locked = false) {
+      cleanupNetwork();
+      state.view = 'join';
+      if (prefillPin) {
+        state.pin = prefillPin;
+        state.pinLocked = locked;
+      }
+      render();
+    }
+
+    function unlockPinField() {
+      state.pinLocked = false;
+      render();
+    }
+
+    function renderJoin(app) {
+      app.innerHTML = `
+        <div class="card-cream p-8 max-w-md mx-auto">
+          ${state.pinLocked ? '' : `<button onclick="goHome()" class="text-xs font-bold text-[#168049] hover:underline mb-4 block">← Retour à l'accueil</button>`}
+          <span class="text-xs font-bold uppercase tracking-wider text-[#168049] block mb-1">Quiz Comité Echange 2026</span>
+          <h2 class="text-2xl font-black text-[#0E5A36] mb-1">Rejoindre la partie</h2>
+          <p class="text-xs text-stone-600 font-medium mb-6">
+            ${state.pinLocked ? 'Indiquez simplement votre prénom ou magasin pour entrer.' : 'Entrez le code PIN affiché à l\'écran et votre prénom ou magasin.'}
+          </p>
+
+          <form onsubmit="handleJoinSubmit(event)" class="space-y-4">
+            ${state.pinLocked ? `
+              <input type="hidden" id="join-pin" value="${escapeHtml(state.pin)}">
+              <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl border border-[#0E5A36]/15 text-xs">
+                <span class="font-bold text-[#0E5A36]">Session : <strong>${escapeHtml(state.pin)}</strong></span>
+                <button type="button" onclick="unlockPinField()" class="text-[#168049] underline font-bold">Changer</button>
+              </div>
+            ` : `
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-[#0E5A36] mb-1">Code PIN</label>
+                <input type="text" id="join-pin" inputmode="numeric" maxlength="4" required value="${escapeHtml(state.pin)}" placeholder="0000" class="w-full bg-white border-2 border-[#0E5A36]/20 rounded-xl px-4 py-3 text-center text-2xl font-black tracking-widest text-[#0E5A36] focus:outline-none focus:border-[#168049]">
+              </div>
+            `}
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-[#0E5A36] mb-1">Votre prénom / Magasin</label>
+              <input type="text" id="join-pseudo" maxlength="24" required autofocus value="${escapeHtml(state.pseudo)}" placeholder="Ex: Marie - City Lyon" class="w-full bg-white border-2 border-[#0E5A36]/20 rounded-xl px-4 py-3 font-bold text-[#1A2E22] focus:outline-none focus:border-[#168049]">
+            </div>
+            <button type="submit" id="join-btn" class="w-full btn-primary py-4 rounded-xl font-extrabold text-base shadow-md cursor-pointer">
+              Entrer dans la partie
+            </button>
+          </form>
+        </div>
+      `;
+    }
+
+    function handleJoinSubmit(e) {
+      e.preventDefault();
+      const pin = document.getElementById('join-pin').value.trim();
+      const pseudo = document.getElementById('join-pseudo').value.trim();
+      const btn = document.getElementById('join-btn');
+      if (!pin || !pseudo) return;
+
+      btn.disabled = true;
+      btn.textContent = "Connexion...";
+
+      cleanupNetwork();
+      state.pin = pin;
+      state.pseudo = pseudo;
+      state.status = 'lobby';
+      state.paused = false;
+      state.currentQuestion = 0;
+      state.totalQuestions = state.questions.length;
+      state.activeQuestionObj = null;
+      state.selectedAnswer = null;
+      state.myScore = 0;
+      state.myLastPoints = 0;
+      state.myRank = 0;
+
+      const peer = new Peer({ secure: true });
+      state.peer = peer;
+
+      const failTimeout = setTimeout(() => {
+        if (state.view === 'join') {
+          alert("Impossible de joindre la salle " + pin + ". Vérifiez le code PIN affiché sur l'écran principal.");
+          btn.disabled = false;
+          btn.textContent = "Entrer dans la partie";
+        }
+      }, 8000);
+
+      peer.on('open', () => {
+        const conn = peer.connect(`quiz-ce2026-${pin}`, { reliable: true });
+        state.hostConn = conn;
+
+        conn.on('open', () => {
+          clearTimeout(failTimeout);
+          conn.send({
+            type: 'join',
+            id: state.playerId,
+            pseudo: pseudo
+          });
+          state.view = 'player';
+          render();
+        });
+
+        conn.on('data', (msg) => {
+          if (!msg || msg.type !== 'state') return;
+          const prevQ = state.currentQuestion;
+          const prevStatus = state.status;
+
+          state.status = msg.st;
+          state.paused = msg.pz === 1;
+          state.currentQuestion = msg.q;
+          if (msg.tot) state.totalQuestions = msg.tot;
+
+          if (msg.qd) {
+            state.activeQuestionObj = {
+              question: msg.qd.t,
+              options: msg.qd.o,
+              correct: msg.qd.c,
+              timer: msg.qd.tm || 20
+            };
+          }
+
+          if (msg.st === 'question' && (prevQ !== msg.q || prevStatus !== 'question')) {
+            if (!state.paused) {
+              state.selectedAnswer = null;
+              state.questionStartTime = Date.now();
+            }
+          }
+
+          if (msg.st === 'reveal' && prevStatus !== 'reveal') {
+            const qObj = state.activeQuestionObj || state.questions[msg.q];
+            if (qObj && state.selectedAnswer === qObj.correct) {
+              const elapsed = Math.max(0, (Date.now() - state.questionStartTime) / 1000);
+              const maxTime = qObj.timer || 20;
+              const pts = Math.round(500 + 500 * Math.max(0, Math.min(1, 1 - (elapsed / maxTime))));
+              state.myLastPoints = pts;
+              state.myScore += pts;
+            } else {
+              state.myLastPoints = 0;
+            }
+          }
+
+          if (Array.isArray(msg.rk)) {
+            const idx = msg.rk.findIndex(item => item[0] === state.playerId);
+            if (idx !== -1) {
+              state.myRank = idx + 1;
+              state.myScore = msg.rk[idx][1];
+            }
+          }
+
+          render();
+        });
+
+        conn.on('close', () => {
+          alert("La connexion avec l'animateur a été interrompue.");
+          goHome();
+        });
+      });
+
+      peer.on('error', () => {
+        clearTimeout(failTimeout);
+        alert("Erreur de connexion réseau.");
+        btn.disabled = false;
+        btn.textContent = "Entrer dans la partie";
+      });
+    }
+
+    function handlePlayerAnswer(answerIdx) {
+      if (state.selectedAnswer !== null || state.paused) return;
+      state.selectedAnswer = answerIdx;
+      render();
+
+      if (state.hostConn && state.hostConn.open) {
+        state.hostConn.send({
+          type: 'ans',
+          id: state.playerId,
+          pseudo: state.pseudo,
+          q: state.currentQuestion,
+          a: answerIdx
+        });
+      }
+    }
+
+    function renderPlayer(app) {
+      if (state.status === 'lobby') {
+        app.innerHTML = `
+          <div class="card-cream p-8 max-w-md mx-auto text-center">
+            <span class="inline-block px-3 py-1 rounded-full bg-[#0E5A36]/10 text-[#0E5A36] font-bold text-xs mb-4">Connecté (PIN ${escapeHtml(state.pin)})</span>
+            <h2 class="text-2xl font-black text-[#0E5A36] mb-2">Bienvenue, ${escapeHtml(state.pseudo)}</h2>
+            <p class="text-sm text-stone-600 font-medium mb-6">Votre nom apparaît à l'écran. La partie va bientôt commencer.</p>
+            <div class="w-10 h-10 border-4 border-[#168049] border-t-transparent rounded-full animate-spin mx-auto"></div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.paused) {
+        app.innerHTML = `
+          <div class="card-cream p-8 max-w-md mx-auto text-center">
+            <span class="inline-block px-3 py-1 rounded-full bg-amber-100 text-amber-800 font-bold text-xs uppercase tracking-wider mb-4">Pause</span>
+            <h2 class="text-2xl font-black text-[#0E5A36] mb-2">Quiz en pause</h2>
+            <p class="text-sm text-stone-600 font-medium">L'animateur a suspendu la partie quelques instants.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const q = state.activeQuestionObj || state.questions[state.currentQuestion];
+
+      if (state.status === 'question') {
+        if (state.selectedAnswer !== null) {
+          app.innerHTML = `
+            <div class="card-cream p-8 max-w-md mx-auto text-center">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#168049] block mb-2">Question ${state.currentQuestion + 1} / ${state.totalQuestions}</span>
+              <h2 class="text-2xl font-black text-[#0E5A36] mb-3">Réponse enregistrée</h2>
+              <p class="text-sm text-stone-600 font-medium">Regardez l'écran principal pour le résultat.</p>
+            </div>
+          `;
+          return;
+        }
+
+        app.innerHTML = `
+          <div class="card-cream p-5 max-w-md mx-auto">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-extrabold text-[#0E5A36]">Question ${state.currentQuestion + 1} / ${state.totalQuestions}</span>
+              <span class="text-xs font-bold text-stone-500">${state.myScore} pts</span>
+            </div>
+            <p class="font-bold text-sm text-[#1A2E22] mb-4">${escapeHtml(q.question)}</p>
+            <div class="grid grid-cols-1 gap-3">
+              ${q.options.map((opt, idx) => `
+                <button onclick="handlePlayerAnswer(${idx})" class="ans-${idx} text-white p-5 rounded-xl font-bold text-left shadow flex items-center gap-3 active:scale-95 transition cursor-pointer">
+                  <span class="w-8 h-8 rounded-lg bg-black/20 flex items-center justify-center font-black shrink-0">${['A','B','C','D'][idx]}</span>
+                  <span class="text-sm leading-snug">${escapeHtml(opt)}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.status === 'reveal') {
+        const isCorrect = state.selectedAnswer === q.correct;
+        app.innerHTML = `
+          <div class="card-cream p-8 max-w-md mx-auto text-center">
+            <div class="inline-block px-4 py-1.5 rounded-full ${isCorrect ? 'bg-[#168049] text-white' : 'bg-[#D93829] text-white'} font-extrabold text-xs uppercase tracking-wider mb-4">
+              ${isCorrect ? 'Bonne réponse' : (state.selectedAnswer === null ? 'Temps écoulé' : 'Mauvaise réponse')}
+            </div>
+            <h2 class="text-3xl font-black text-[#0E5A36] mb-2">${isCorrect ? `+${state.myLastPoints} points` : '0 point'}</h2>
+            <p class="text-sm font-bold text-stone-600 mb-4">Total : ${state.myScore} points</p>
+            <div class="bg-white p-4 rounded-xl border border-[#0E5A36]/15 text-xs text-left">
+              <span class="font-bold text-[#0E5A36] block mb-1">Réponse attendue :</span>
+              <span class="font-semibold text-[#1A2E22]">${escapeHtml(q.options[q.correct])}</span>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.status === 'leaderboard' || state.status === 'podium') {
+        app.innerHTML = `
+          <div class="card-cream p-8 max-w-md mx-auto text-center">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#168049] block mb-2">
+              ${state.status === 'podium' ? 'Classement final' : 'Classement provisoire'}
+            </span>
+            <div class="text-5xl font-black text-[#0E5A36] my-3">${state.myRank > 0 ? state.myRank + (state.myRank === 1 ? 'er' : 'e') : '-'}</div>
+            <p class="text-lg font-extrabold text-[#1A2E22] mb-1">${escapeHtml(state.pseudo)}</p>
+            <p class="text-sm font-bold text-[#168049] mb-6">${state.myScore} points</p>
+            ${state.status === 'podium' ? `<button onclick="goHome()" class="btn-primary px-6 py-3 rounded-xl font-bold text-sm">Retour à l'accueil</button>` : ''}
+          </div>
+        `;
+      }
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    (function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pinFromUrl = urlParams.get('pin') || '';
+      if (pinFromUrl) {
+        openJoinView(pinFromUrl, true);
+      } else {
+        render();
+      }
+    })();
+  </script>
+</body>
+</html>
